@@ -61,7 +61,7 @@ Wahrscheinlichkeit p=0,05 tritt ein Bitfehler im Paket auf. Prüfen Sie die empf
 Datei auf korrekte Übertragung, z.B. indem Sie ein Bild übertragen oder eine
 komprimierte Datei senden!
 
-- [ ] <b>g)</b> Installieren Sie FileSender und FileReceiver auf unterschiedlichen Rechnern. Welche
+- [x] <b>g)</b> Installieren Sie FileSender und FileReceiver auf unterschiedlichen Rechnern. Welche
 Zeit brauchen Sie, um die Datei zu übertragen? Welchen Goodput (in MBit/s) erzielen
 Sie? Geben Sie die ermittelten Werte auf der Konsole aus.
 
