@@ -292,26 +292,25 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
 /// ```no_run
 /// use secsnail::sock::SecSnailSocket;
 ///
-///  let recv_addr: SocketAddr = format!("{}:{}", args.ip, DEFAULT_SECSNAIL_PORT)
+/// let recv_addr: SocketAddr = format!("{}:{}", args.ip, DEFAULT_SECSNAIL_PORT)
 /// .parse()
 /// .expect("Unable to parse socket address");
 ///
 /// let mut secsnail_sock = SecSnailSocket::bind("0.0.0.0:3000").unwrap();
+///
 /// secsnail_sock.set_rcv_file_timeout_ms(100);
 /// secsnail_sock.set_snd_file_max_retransmits(10);
-/// secsnail_sock.set_unreliable_transmit_parameters(args.loss_p, args.error_p, args.dup_p);
 ///
 /// let (amt_bytes, dur) = secsnail_sock.send_file_blocking(args.file_name, recv_addr)?;
 /// ```
 ///
 /// ## Receiving a file
 /// ```no_run
-///
 /// use secsnail::sock::SecSnailSocket;
+
 /// let mut secsnail_sock = SecSnailSocket::bind_default_port().unwrap();
 ///
-/// secsnail_sock.set_unreliable_transmit_parameters(args.loss_p, args.error_p, args.dup_p);
-/// secsnail_sock.recv_file_blocking(args.destination).unwrap();
+/// secsnail_sock.recv_file_blocking("./test").unwrap();
 /// ```
 pub struct SecSnailSocket {
     inner: UdpSocket,
