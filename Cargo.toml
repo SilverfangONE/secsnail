@@ -7,12 +7,23 @@ edition = "2024"
 crc = "3.4.0"
 crc-catalog = "2.4.0"
 rand = "0.9.2"
+clap = { version = "4.5", features = ["derive"], optional = true }
 
-[target.'cfg(bin)'.dependencies]
-clap = { version = "4.0", features = ["derive"] }
+[features]
+bin-deps = ["dep:clap"]
+
+[[bin]]
+name = "server"
+path = "src/bin/server.rs"
+required-features = ["bin-deps"]
+
+[[bin]]
+name = "client"
+path = "src/bin/client.rs"
+required-features = ["bin-deps"]
 
 [profile.release]
-opt-level=3
+opt-level = 3
 lto = "fat"
 codegen-units = 1
 strip = true
