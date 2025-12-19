@@ -42,7 +42,6 @@ impl RcvStateWaitForPkt {
 
 // fsm
 
-/// TODO: "Lieber habe als Brauchen"
 #[derive(Clone, Copy)]
 struct Config {}
 

@@ -144,13 +144,11 @@ impl<'a> fsm_send::fsm::ProtocolIoContext for SendProtocolIoContext<'a> {
 
     fn stop_timer(&mut self) -> io::Result<()> {
         self.timer_start.take();
-        // TODO: can man vielleicht raus nehmen not sure though
         self.sock_ref.inner.set_read_timeout(Some(self.timeout))?;
         Ok(())
     }
 
     fn udt_send(&mut self, pck: &Packet) -> io::Result<()> {
-        // TODO: count read bytes for analyises metrics
         self.sock_ref.udt_send(pck, self.recv_addr)?;
         Ok(())
     }
@@ -261,7 +259,6 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
 
     fn stop_connection_timer(&mut self) -> io::Result<()> {
         self.connection_timer_start.take();
-        // TODO: can man vielleicht raus nehmen not sure though
         self.sock_ref
             .inner
             .set_read_timeout(Some(self.connection_timeout))?;
@@ -279,7 +276,6 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
     }
 
     fn open_file(&mut self, filename: &str) -> io::Result<()> {
-        // TODO: incsure filename ohne '/'
         let file = File::create(self.target_dir.join(filename))?;
         self.buf_wrt.replace(BufWriter::new(file));
         Ok(())
@@ -287,7 +283,6 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
 
     /// call only if snd_addr is set
     fn udt_send(&mut self, pck: &Packet) -> io::Result<()> {
-        // TODO: count read bytes for analyises metrics
         self.sock_ref.udt_send(pck, self.snd_addr.unwrap())?;
         Ok(())
     }
@@ -474,7 +469,6 @@ impl SecSnailSocket {
         self.inner.send_to(&pkt, recv_addr)
     }
 
-    /// TODO: only accept connectionts to recv_addr ??
     fn rdt_recv(&self) -> io::Result<(SocketAddr, Option<Packet>)> {
         let mut buf: Vec<u8> = vec![0; MAX_PAYLOAD_SIZE];
         let (_, src) = self.inner.recv_from(&mut buf)?;
