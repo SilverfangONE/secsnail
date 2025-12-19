@@ -1,0 +1,17 @@
+[package]
+name = "secsnail"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"]}
+crc = "3.4.0"
+crc-catalog = "2.4.0"
+rand = "0.9.2"
+
+[profile.release]
+opt-level=3
+lto = "fat"
+codegen-units = 1
+strip = true
+panic = "abort"
