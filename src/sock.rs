@@ -290,9 +290,9 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
 ///
 /// ## Sending a file
 /// ```no_run
-/// use secsnail::sock::SecSnailSocket;
-///
-/// let recv_addr: SocketAddr = format!("{}:{}", args.ip, DEFAULT_SECSNAIL_PORT)
+/// use secsnail::sock::{DEFAULT_SECSNAIL_PORT, SecSnailSocket};
+/// use std::net::SocketAddr;
+/// let recv_addr: SocketAddr = format!("{}:{}", "127.0.0.1", DEFAULT_SECSNAIL_PORT)
 /// .parse()
 /// .expect("Unable to parse socket address");
 ///
@@ -301,13 +301,12 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
 /// secsnail_sock.set_rcv_file_timeout_ms(100);
 /// secsnail_sock.set_snd_file_max_retransmits(10);
 ///
-/// let (amt_bytes, dur) = secsnail_sock.send_file_blocking(args.file_name, recv_addr)?;
+/// let (amt_bytes, dur) = secsnail_sock.send_file_blocking("file.txt", recv_addr)?;
 /// ```
 ///
 /// ## Receiving a file
 /// ```no_run
 /// use secsnail::sock::SecSnailSocket;
-
 /// let mut secsnail_sock = SecSnailSocket::bind_default_port().unwrap();
 ///
 /// secsnail_sock.recv_file_blocking("./test").unwrap();
@@ -379,8 +378,7 @@ impl SecSnailSocket {
 
         // setup
         let mut ctx = RecvProtocolIoContext::new(self, target_dir, self.rcv_timeout_config);
-        run_rcv_fsm_loop(&mut ctx)?;
-        Ok(())
+        run_rcv_fsm_loop(&mut ctx)
     }
 
     // socket configuration functions
