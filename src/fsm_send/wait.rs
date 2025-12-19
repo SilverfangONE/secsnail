@@ -26,9 +26,7 @@ impl StateRouter for SndFsm<SndStateWait> {
 
             // edge 3: valid ack
             SndEvent::RecvPck(Some(rcvpkt))
-                if rcvpkt.notcorrupt()
-                    && rcvpkt.is_ACK()
-                    && n == rcvpkt.n() =>
+                if rcvpkt.notcorrupt() && rcvpkt.is_ACK() && n == rcvpkt.n() =>
             {
                 ctx.stop_timer()?;
                 Ok(self.to_send(next_n(n)).wrap())
@@ -45,10 +43,7 @@ impl StateRouter for SndFsm<SndStateWait> {
             }
 
             // corrupt packet (could not be parsed)
-            SndEvent::RecvPck(None) =>
-            {
-                Ok(self.wrap())
-            }
+            SndEvent::RecvPck(None) => Ok(self.wrap()),
 
             // edge 8: corrupt/wrong ack -> wait for timeout from driver loop
             SndEvent::RecvPck(Some(rcvpkt))

@@ -18,8 +18,14 @@ fn main() -> io::Result<()> {
 
     let (amt_bytes, dur) = secsnail_sock.send_file_blocking(args.file_name, recv_addr)?;
 
-    println!("Sent {amt_bytes} bytes via secure snail 🐌 in {} s", dur.as_secs_f64());
-    println!("-> Goodput: {} kByte/s", amt_bytes as u128/dur.as_millis());
+    println!(
+        "Sent {amt_bytes} bytes via secure snail 🐌 in {} s",
+        dur.as_secs_f64()
+    );
+    println!(
+        "-> Goodput: {} kByte/s",
+        amt_bytes as u128 / dur.as_millis()
+    );
     Ok(())
 }
 
@@ -30,10 +36,10 @@ struct Args {
     ip: String,
     #[arg(short, long)]
     file_name: String,
-    #[arg(short, long, default_value_t=0.0)]
+    #[arg(short, long, default_value_t = 0.0)]
     loss_p: f64,
-    #[arg(short, long, default_value_t=0.0)]
+    #[arg(short, long, default_value_t = 0.0)]
     error_p: f64,
-    #[arg(short, long, default_value_t=0.0)]
+    #[arg(short, long, default_value_t = 0.0)]
     dup_p: f64,
 }

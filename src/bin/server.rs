@@ -1,6 +1,6 @@
+use clap::Parser;
 use secsnail::sock::SecSnailSocket;
 use std::io;
-use clap::Parser;
 
 /// Demo server listens for incoming secure snail file transmissions
 ///
@@ -18,10 +18,10 @@ fn main() -> io::Result<()> {
 struct Args {
     #[arg(long)]
     destination: String,
-    #[arg(short, long, default_value_t=0.0)]
+    #[arg(short, long, default_value_t = 0.0)]
     loss_p: f64,
-    #[arg(short, long, default_value_t=0.0)]
+    #[arg(short, long, default_value_t = 0.0)]
     error_p: f64,
-    #[arg(short, long, default_value_t=0.0)]
+    #[arg(short, long, default_value_t = 0.0)]
     dup_p: f64,
 }

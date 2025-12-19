@@ -17,11 +17,15 @@ impl StateRouter for RcvFsm<RcvStateWaitForPkt> {
             // packet corrupt (could not be parsed)
             RcvEvent::RecvPck(None, _) => Ok(self.wrap()),
             // edge 8: rcvpkt corrupt (checksum) oder syn
-            RcvEvent::RecvPck(Some(rcvpkt), _) if rcvpkt.corrupt() || rcvpkt.is_SYN() => Ok(self.wrap()),
+            RcvEvent::RecvPck(Some(rcvpkt), _) if rcvpkt.corrupt() || rcvpkt.is_SYN() => {
+                Ok(self.wrap())
+            }
 
             // edge 9: rcvpkt (data) with wrong n => resend ack (last sndpkt)
             RcvEvent::RecvPck(Some(rcvpkt), _)
-                if rcvpkt.notcorrupt() && rcvpkt.n() == self.state().sndpkt().n() && rcvpkt.is_not_SYN() =>
+                if rcvpkt.notcorrupt()
+                    && rcvpkt.n() == self.state().sndpkt().n()
+                    && rcvpkt.is_not_SYN() =>
             {
                 ctx.udt_send(self.state().sndpkt())?;
                 ctx.restart_connection_timer()?;
@@ -30,7 +34,9 @@ impl StateRouter for RcvFsm<RcvStateWaitForPkt> {
 
             // edge 10: rcvpkt (data) with correct n
             RcvEvent::RecvPck(Some(rcvpkt), _)
-                if rcvpkt.notcorrupt() && rcvpkt.n() != self.state().sndpkt().n() && rcvpkt.is_Data() =>
+                if rcvpkt.notcorrupt()
+                    && rcvpkt.n() != self.state().sndpkt().n()
+                    && rcvpkt.is_Data() =>
             {
                 let data = ctx.extract_data(&rcvpkt);
                 ctx.append(data)?;
@@ -50,7 +56,9 @@ impl StateRouter for RcvFsm<RcvStateWaitForPkt> {
 
             // edge 12: fin rcvpkt with correct n
             RcvEvent::RecvPck(Some(rcvpkt), _)
-                if rcvpkt.notcorrupt() && rcvpkt.n() != self.state().sndpkt().n() && rcvpkt.is_FIN() =>
+                if rcvpkt.notcorrupt()
+                    && rcvpkt.n() != self.state().sndpkt().n()
+                    && rcvpkt.is_FIN() =>
             {
                 println!("Connection Closed after {} Bytes", ctx.get_data_counter());
                 let sndpkt = ctx.make_pkt(rcvpkt.n(), Flag::FINACK)?;

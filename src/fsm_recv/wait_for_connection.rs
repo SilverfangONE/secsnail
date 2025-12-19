@@ -17,10 +17,7 @@ impl StateRouter for RcvFsm<RcvStateWaitForConnection> {
     ) -> io::Result<FsmStateWrapper> {
         match e {
             // corrupt packet (could not be parsed)
-            RcvEvent::RecvPck(None, _) =>
-            {
-                Ok(self.wrap())
-            }
+            RcvEvent::RecvPck(None, _) => Ok(self.wrap()),
 
             // edge 1a,b,c: not syn pkt, wrong seq n, corrupt pkt (checksum)
             RcvEvent::RecvPck(Some(rcvpkt), _)
