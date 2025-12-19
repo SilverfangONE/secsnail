@@ -13,7 +13,7 @@ Server-Demo:
 cargo run --release --bin server -- --destination `[DIR_NAME]` -e `[ERROR_RATE]` -l `[LOSS_RATE]` -d `[DUP_RATE]`
 ````
 
-
+___
 ### Aufgaben
 
 - [x] <b>a)</b> Spezifizieren Sie geeignete Zustandsautomaten für FileSender und FileReceiver.
