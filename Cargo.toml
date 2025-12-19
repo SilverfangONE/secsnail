@@ -2,6 +2,10 @@
 name = "secsnail"
 version = "1.0.0"
 edition = "2024"
+authors = ["Luis Andrés Boden <luis.boden@gmail.com>", "Jan Spennemann"]
+description = "Secure Snail Protocol 🐌 for file transfer, implemented in rust."
+license = "MIT"
+repository = "https://github.com/SilverfangONE/secsnail"
 
 [dependencies]
 crc = "3.4.0"
