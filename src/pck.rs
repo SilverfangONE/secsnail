@@ -48,6 +48,7 @@ const CRC_8_I_423_1: crc::Algorithm<u8> = crc::Algorithm {
     residue: 0xAC,
 };
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum Flag {
     SYN,

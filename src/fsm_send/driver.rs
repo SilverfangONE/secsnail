@@ -1,13 +1,16 @@
 use super::fsm::FsmStateWrapper;
 use super::fsm::FsmWrap;
-use std::{io, time::Instant, time::Duration};
+use std::{io, time::Duration, time::Instant};
 
 use super::fsm::ProtocolIoContext;
 use super::fsm::SndEvent;
 use super::fsm::SndFsm;
 use super::fsm::StateRouter;
 
-pub fn run_snd_fsm_loop(ctx: &mut impl ProtocolIoContext, max_retransmits: u8) -> io::Result<(usize, Duration)> {
+pub fn run_snd_fsm_loop(
+    ctx: &mut impl ProtocolIoContext,
+    max_retransmits: u8,
+) -> io::Result<(usize, Duration)> {
     // connection handshake via SYN and file name pkt
     let mut cur_fsm_wrap = SndFsm::init(max_retransmits).wrap();
 
@@ -15,7 +18,7 @@ pub fn run_snd_fsm_loop(ctx: &mut impl ProtocolIoContext, max_retransmits: u8) -
 
     // run fsm
     loop {
-        if let FsmStateWrapper::End(_) = cur_fsm_wrap {
+        if let FsmStateWrapper::End = cur_fsm_wrap {
             break;
         }
 
@@ -27,7 +30,7 @@ pub fn run_snd_fsm_loop(ctx: &mut impl ProtocolIoContext, max_retransmits: u8) -
             FsmStateWrapper::Send(fsm) => fsm.goto(event, ctx)?,
 
             // end state gets handled above
-            FsmStateWrapper::End(_) => unreachable!(),
+            FsmStateWrapper::End => unreachable!(),
         };
     }
 
@@ -48,7 +51,7 @@ fn get_next_event_for_current_state(
         // init event for handshake
         FsmStateWrapper::Start(_) => Ok(SndEvent::InitSYN),
 
-        FsmStateWrapper::End(_) => {
+        FsmStateWrapper::End => {
             unreachable!("Never call Event on end state in snd fsm");
         }
     }

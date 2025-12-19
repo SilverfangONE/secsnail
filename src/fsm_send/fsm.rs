@@ -156,7 +156,7 @@ impl FsmWrap for SndFsm<SndStateSend> {
 
 impl FsmWrap for SndFsm<SndStateEnd> {
     fn wrap(self) -> FsmStateWrapper {
-        FsmStateWrapper::End(self)
+        FsmStateWrapper::End
     }
 }
 
@@ -185,7 +185,7 @@ pub enum FsmStateWrapper {
     Start(SndFsm<SndStateStart>),
     Wait(SndFsm<SndStateWait>),
     Send(SndFsm<SndStateSend>),
-    End(SndFsm<SndStateEnd>),
+    End,
 }
 
 pub trait StateRouter {

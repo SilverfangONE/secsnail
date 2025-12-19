@@ -7,9 +7,7 @@ use super::fsm::RcvEvent;
 use super::fsm::RcvFsm;
 use super::fsm::StateRouter;
 
-pub fn run_rcv_fsm_loop(
-    ctx: &mut impl ProtocolIoContext,
-) -> io::Result<()> {
+pub fn run_rcv_fsm_loop(ctx: &mut impl ProtocolIoContext) -> io::Result<()> {
     // connection handshake via SYN and file name pkt
     let mut cur_fsm_wrap = RcvFsm::init().wrap();
 
@@ -22,8 +20,6 @@ pub fn run_rcv_fsm_loop(
             FsmStateWrapper::WaitForPkt(fsm) => fsm.goto(event, ctx)?,
         };
     }
-
-    Ok(())
 }
 
 fn get_next_event_for_current_state(
@@ -33,7 +29,7 @@ fn get_next_event_for_current_state(
     match wrapper {
         // blocking until new pck recvd
         FsmStateWrapper::WaitForConnection(_) => ctx.wait_for_pck_no_timeout(),
-        
+
         // check if data is available
         FsmStateWrapper::WaitForPkt(_) => ctx.wait_for_ack_or_timeout(),
     }

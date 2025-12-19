@@ -103,7 +103,7 @@ impl<'a> fsm_send::fsm::ProtocolIoContext for SendProtocolIoContext<'a> {
     }
 
     fn data_available(&mut self) -> io::Result<bool> {
-        Ok(self.buf_redr.fill_buf()?.len() > 0)
+        Ok(!self.buf_redr.fill_buf()?.is_empty())
     }
 
     fn make_pkt(&mut self, seq_n: u8, f: Flag) -> io::Result<Packet> {
@@ -360,8 +360,8 @@ impl SecSnailSocket {
         let target_dir = target_dir.as_ref();
 
         // check if path is a file
-        if let Ok(metadata) = fs::metadata(target_dir) {
-            if metadata.is_file() {
+        if let Ok(metadata) = fs::metadata(target_dir)
+            && metadata.is_file() {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidInput,
                     format!(
@@ -370,7 +370,6 @@ impl SecSnailSocket {
                     ),
                 ));
             }
-        }
 
         fs::create_dir_all(target_dir)?;
 
