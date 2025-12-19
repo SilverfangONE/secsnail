@@ -6,20 +6,6 @@
 //! which drives the FSM logic on top of the same socket.
 //!
 //! For now, the socket supports one transfer at a time (blocking).
-//!
-//!
-//! by Jan Spenneman & Luis Andrés Boden
-//!
-//! ```text
-//!
-//!     .----.   @   @
-//!    / .-"-.`.  \v/
-//!    | | '\ \ \_/ )
-//!  ,-\ `-.' /.'  /
-//! '---`----'----' hjw
-//!
-//! Art credit: Hayley Jane Wakenshaw — thank you!
-//! ```
 
 use std::{
     fs::{self, File},
@@ -300,8 +286,33 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
     }
 }
 
-/// Currently it is only possible to sendet one file per time through one socket
-/// in result you need to create a new one to send mulitple files in parallel
+/// # Examples
+///
+/// ## Sending a file
+/// ```no_run
+/// use secsnail::sock::SecSnailSocket;
+///
+///  let recv_addr: SocketAddr = format!("{}:{}", args.ip, DEFAULT_SECSNAIL_PORT)
+/// .parse()
+/// .expect("Unable to parse socket address");
+///
+/// let mut secsnail_sock = SecSnailSocket::bind("0.0.0.0:3000").unwrap();
+/// secsnail_sock.set_rcv_file_timeout_ms(100);
+/// secsnail_sock.set_snd_file_max_retransmits(10);
+/// secsnail_sock.set_unreliable_transmit_parameters(args.loss_p, args.error_p, args.dup_p);
+///
+/// let (amt_bytes, dur) = secsnail_sock.send_file_blocking(args.file_name, recv_addr)?;
+/// ```
+///
+/// ## Receiving a file
+/// ```no_run
+///
+/// use secsnail::sock::SecSnailSocket;
+/// let mut secsnail_sock = SecSnailSocket::bind_default_port().unwrap();
+///
+/// secsnail_sock.set_unreliable_transmit_parameters(args.loss_p, args.error_p, args.dup_p);
+/// secsnail_sock.recv_file_blocking(args.destination).unwrap();
+/// ```
 pub struct SecSnailSocket {
     inner: UdpSocket,
     snd_max_retransmits: u8,
@@ -338,7 +349,6 @@ impl SecSnailSocket {
 
     // socket blocking functionality
 
-    /// send file with udp socket blocking
     pub fn send_file_blocking<P: AsRef<Path>>(
         &mut self,
         path: P,
@@ -350,7 +360,6 @@ impl SecSnailSocket {
         Ok(ret)
     }
 
-    /// rcv file with udp socket blocking
     pub fn recv_file_blocking<P: AsRef<Path>>(&mut self, target_dir: P) -> io::Result<()> {
         let target_dir = target_dir.as_ref();
 
