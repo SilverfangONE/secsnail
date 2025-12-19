@@ -10,6 +10,7 @@
 //!
 //! by Jan Spenneman & Luis Andrés Boden
 //!
+//! ```text
 //!
 //!     .----.   @   @
 //!    / .-"-.`.  \v/
@@ -18,6 +19,7 @@
 //! '---`----'----' hjw
 //!
 //! Art credit: Hayley Jane Wakenshaw — thank you!
+//! ```
 
 use std::{
     fs::{self, File},
