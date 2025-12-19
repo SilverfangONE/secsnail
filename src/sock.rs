@@ -301,7 +301,7 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
 /// secsnail_sock.set_rcv_file_timeout_ms(100);
 /// secsnail_sock.set_snd_file_max_retransmits(10);
 ///
-/// let (amt_bytes, dur) = secsnail_sock.send_file_blocking("file.txt", recv_addr)?;
+/// let (amt_bytes, dur) = secsnail_sock.send_file_blocking("file.txt", recv_addr).unwrap();
 /// ```
 ///
 /// ## Receiving a file
