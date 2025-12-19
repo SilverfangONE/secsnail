@@ -59,7 +59,7 @@ pub enum Flag {
 }
 
 impl Flag {
-    fn to_byte(&self, n: bool) -> u8 {
+    fn to_byte(self, n: bool) -> u8 {
         let mut f = match self {
             Flag::SYN => 0b00010000,
             Flag::ACK => 0b01000000,

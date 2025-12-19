@@ -24,11 +24,14 @@ use std::{
     io::{self, BufRead, BufReader, BufWriter, Read, Write},
     net::{SocketAddr, ToSocketAddrs, UdpSocket},
     path::Path,
-    time::{Duration, Instant},
     str,
+    time::{Duration, Instant},
 };
 
-use crate::{fsm_recv::{self, driver::run_rcv_fsm_loop, fsm::RcvEvent}, pck::MAX_PAYLOAD_SIZE};
+use crate::{
+    fsm_recv::{self, driver::run_rcv_fsm_loop, fsm::RcvEvent},
+    pck::MAX_PAYLOAD_SIZE,
+};
 
 use super::pck::Flag;
 use super::pck::Packet;
@@ -84,7 +87,7 @@ impl<'a> SendProtocolIoContext<'a> {
             sock_ref,
             buf_redr,
             timeout,
-            data_counter: 0
+            data_counter: 0,
         })
     }
 }
@@ -159,7 +162,6 @@ impl<'a> fsm_send::fsm::ProtocolIoContext for SendProtocolIoContext<'a> {
     }
 }
 
-
 struct RecvProtocolIoContext<'a> {
     sock_ref: &'a mut SecSnailSocket,
     snd_addr: Option<SocketAddr>,
@@ -167,11 +169,11 @@ struct RecvProtocolIoContext<'a> {
     connection_timeout: Duration,
     connection_timer_start: Option<Instant>,
     target_dir: &'a Path,
-    data_counter: usize
+    data_counter: usize,
 }
 
 impl<'a> RecvProtocolIoContext<'a> {
-    pub fn new(    
+    pub fn new(
         sock_ref: &'a mut SecSnailSocket,
         target_dir: &'a Path,
         connection_timeout: Duration,
@@ -183,7 +185,7 @@ impl<'a> RecvProtocolIoContext<'a> {
             connection_timer_start: None,
             snd_addr: None,
             buf_wrt: None,
-            data_counter: 0
+            data_counter: 0,
         }
     }
 }
@@ -203,10 +205,10 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
                 io::ErrorKind::InvalidInput,
                 format!("Invalid UTF-8 sequence: {}", e),
             )),
-        }    
+        }
     }
 
-    /// not write to buffer if buffer was not check 
+    /// not write to buffer if buffer was not check
     fn append(&mut self, data: &[u8]) -> io::Result<()> {
         #[cfg(debug_assertions)]
         {
@@ -214,13 +216,14 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
                 unreachable!("buf_wrt in ctx should always be set by calling append in fmt");
             }
         }
-        self.buf_wrt.as_mut().unwrap().write(data)?;
+
+        self.buf_wrt.as_mut().unwrap().write_all(data)?;
         Ok(())
     }
 
     /// never call this functino if snd_addr is not set
     fn wait_for_ack_or_timeout(&mut self) -> io::Result<RcvEvent> {
-         let r = self.sock_ref.wait_for_incoming_or_timeout(
+        let r = self.sock_ref.wait_for_incoming_or_timeout(
             self.snd_addr,
             self.connection_timeout,
             self.connection_timer_start.unwrap(),
@@ -233,16 +236,11 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
 
     fn wait_for_pck_no_timeout(&mut self) -> io::Result<RcvEvent> {
         self.sock_ref.inner.set_read_timeout(None)?;
-        loop {
-            match self.sock_ref.rdt_recv() {
-                Ok((src, rcv_pck)) => {
-                    return Ok(RcvEvent::RecvPck(rcv_pck, src))
-                }
-                Err(e) => return Err(e),
-            }
+        match self.sock_ref.rdt_recv() {
+            Ok((src, rcv_pck)) => Ok(RcvEvent::RecvPck(rcv_pck, src)),
+            Err(e) => Err(e),
         }
-     }
-
+    }
 
     fn make_pkt(&mut self, seq_n: u8, f: Flag) -> io::Result<Packet> {
         Packet::new(u8_to_bool(seq_n), f, vec![])
@@ -252,16 +250,19 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
     fn start_connection_timer(&mut self) -> io::Result<()> {
         self.connection_timer_start = Some(Instant::now());
         // no timeout occures by starting timer
-        _ = self
-            .sock_ref
-            .update_udp_sock_timeout(self.connection_timer_start.unwrap(), self.connection_timeout)?;
+        _ = self.sock_ref.update_udp_sock_timeout(
+            self.connection_timer_start.unwrap(),
+            self.connection_timeout,
+        )?;
         Ok(())
     }
 
     fn stop_connection_timer(&mut self) -> io::Result<()> {
         self.connection_timer_start.take();
         // TODO: can man vielleicht raus nehmen not sure though
-        self.sock_ref.inner.set_read_timeout(Some(self.connection_timeout))?;
+        self.sock_ref
+            .inner
+            .set_read_timeout(Some(self.connection_timeout))?;
         Ok(())
     }
     fn restart_connection_timer(&mut self) -> io::Result<()> {
@@ -276,7 +277,7 @@ impl<'b> fsm_recv::fsm::ProtocolIoContext for RecvProtocolIoContext<'b> {
     }
 
     fn open_file(&mut self, filename: &str) -> io::Result<()> {
-        // TODO: incsure filename ohne '/'        
+        // TODO: incsure filename ohne '/'
         let file = File::create(self.target_dir.join(filename))?;
         self.buf_wrt.replace(BufWriter::new(file));
         Ok(())
@@ -311,7 +312,7 @@ pub struct SecSnailSocket {
     rcv_timeout_config: Duration,
     error_p: f64,
     loss_p: f64,
-    dup_p: f64
+    dup_p: f64,
 }
 
 impl SecSnailSocket {
@@ -326,9 +327,9 @@ impl SecSnailSocket {
             snd_max_retransmits: DEFAULT_MAX_RETRANSMITS,
             snd_timeout_config: Duration::from_millis(DEFAULT_SND_TIMEOUT_MS),
             rcv_timeout_config: Duration::from_millis(DEFAULT_RCV_TIMEOUT_MS),
-            error_p:  0.0,
-            dup_p:  0.0,
-            loss_p:  0.0
+            error_p: 0.0,
+            dup_p: 0.0,
+            loss_p: 0.0,
         })
     }
 
@@ -353,36 +354,31 @@ impl SecSnailSocket {
     }
 
     /// rcv file with udp socket blocking
-    pub fn recv_file_blocking<P: AsRef<Path>>(
-        &mut self,
-        target_dir: P,
-    ) -> io::Result<()> {
+    pub fn recv_file_blocking<P: AsRef<Path>>(&mut self, target_dir: P) -> io::Result<()> {
         let target_dir = target_dir.as_ref();
 
         // check if path is a file
         if let Ok(metadata) = fs::metadata(target_dir)
-            && metadata.is_file() {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    format!(
-                        "given dir path '{}' exists and is a file, only a target dir is expected.",
-                        target_dir.display()
-                    ),
-                ));
-            }
+            && metadata.is_file()
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!(
+                    "given dir path '{}' exists and is a file, only a target dir is expected.",
+                    target_dir.display()
+                ),
+            ));
+        }
 
         fs::create_dir_all(target_dir)?;
 
         // setup
-        let mut ctx = RecvProtocolIoContext::new(
-            self, target_dir, self.rcv_timeout_config
-        );
+        let mut ctx = RecvProtocolIoContext::new(self, target_dir, self.rcv_timeout_config);
         run_rcv_fsm_loop(&mut ctx)?;
         Ok(())
     }
 
     // socket configuration functions
-
 
     pub fn set_snd_file_timeout_ms(&mut self, timeout_ms: u64) {
         self.snd_timeout_config = Duration::from_millis(timeout_ms);
@@ -415,13 +411,13 @@ impl SecSnailSocket {
             }
             match self.rdt_recv() {
                 Ok((src, resp_pck)) => {
-                    // skip rcv_pkt only if rcv_addr_opt ist 
+                    // skip rcv_pkt only if rcv_addr_opt ist
                     // set and not same as src
                     return match recv_addr_opt {
                         Some(rcv_addr) if rcv_addr != src => {
                             continue;
                         }
-                        _ => Ok(RecvResult::RecvPkt(resp_pck, src))
+                        _ => Ok(RecvResult::RecvPkt(resp_pck, src)),
                     };
                 }
                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
@@ -456,7 +452,7 @@ impl SecSnailSocket {
     fn udt_send(&self, sndpkt: &Packet, recv_addr: SocketAddr) -> io::Result<usize> {
         // Simulate Packet loss
         if rand::random_bool(self.loss_p) {
-            return Ok(0)
+            return Ok(0);
         }
 
         let mut pkt = sndpkt.encode().to_vec();
@@ -482,7 +478,7 @@ impl SecSnailSocket {
         let (_, src) = self.inner.recv_from(&mut buf)?;
         match Packet::decode(buf) {
             Ok(pck) => Ok((src, Some(pck))),
-            Err(_) => Ok((src, None))
+            Err(_) => Ok((src, None)),
         }
     }
 }
