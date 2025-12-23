@@ -1,6 +1,6 @@
 [package]
 name = "secsnail"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 authors = ["Luis Andrés Boden <luis.boden@gmail.com>", "Jan Spennemann"]
 description = "Secure Snail Protocol 🐌 for file transfer, implemented in rust."
