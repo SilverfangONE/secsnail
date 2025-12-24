@@ -80,6 +80,9 @@ impl<'a> SendProtocolIoContext<'a> {
     }
 }
 
+// mhieron: Warum wird hier ein Trait verwendet? Ein Trait ist nur nötig wenn ihr unbekannte
+// Typen in einer Method aktzeptieren wollt, hier wird das aber einfach nur für SendProtocolIoContext verwendet.
+// Daher kann man die Methoden direkt auf SendProtocolIoContext implementieren.
 impl<'a> fsm_send::fsm::ProtocolIoContext for SendProtocolIoContext<'a> {
     fn wait_for_ack_or_timeout(&mut self) -> io::Result<fsm_send::fsm::SndEvent> {
         let r = self.sock_ref.wait_for_incoming_or_timeout(
@@ -453,6 +456,9 @@ impl SecSnailSocket {
     }
 
     fn udt_send(&self, sndpkt: &Packet, recv_addr: SocketAddr) -> io::Result<usize> {
+        // mhieron: Ist es so gewollt, dass ihr das in den Code mit schreibt?
+        // Ansonsten wäre es doch besser das ganze auf dem Netzwerk zu simulieren?
+        // So bleibt euer Code clean.
         // Simulate Packet loss
         if rand::random_bool(self.loss_p) {
             return Ok(0);

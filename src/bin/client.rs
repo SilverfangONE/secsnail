@@ -1,17 +1,20 @@
 use clap::Parser;
 use secsnail::sock::{DEFAULT_SECSNAIL_PORT, SecSnailSocket};
-use std::{io, net::SocketAddr};
+use std::net::SocketAddr;
 
 /// Demo client starts a secure snail file transmission:
 ///
 ///   Use default secsnail port 55055
-fn main() -> io::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let recv_addr: SocketAddr = format!("{}:{}", args.ip, DEFAULT_SECSNAIL_PORT)
-        .parse()
-        .expect("Unable to parse socket address");
+        // mhieron: Wenn ihr eh schon ein Result zurückgebt, warum nicht den Fragezeichen Operator verwenden?
+        .parse()?;
 
-    let mut secsnail_sock = SecSnailSocket::bind("0.0.0.0:45454").unwrap();
+    // mhieron: Ich finde den Funktionsnamen `bind` etwas misleading. Ein Server macht normalerweise ein `bind`. Ein Client nur ein `connect`.
+    let mut secsnail_sock = SecSnailSocket::bind("0.0.0.0:45454")?;
+
+    // mhieron: Warum hier nochmal die Werte setzen? Die sind doch eh schon default.
     secsnail_sock.set_rcv_file_timeout_ms(100);
     secsnail_sock.set_snd_file_max_retransmits(10);
     secsnail_sock.set_unreliable_transmit_parameters(args.loss_p, args.error_p, args.dup_p);
