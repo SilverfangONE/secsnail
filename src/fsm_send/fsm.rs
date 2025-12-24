@@ -87,46 +87,57 @@ impl Config {
     }
 }
 
+// mhieron: Das State Machine Pattern ist nicht wirklich umgesetzt.
+// Dort ist der State immer nur ein Marker und enthält keine Daten. Ebenfalls werden
+// State Transitions durch eine Methode die Self konsumiert und dann einen neuen State
+// zurück liefert.
+// That being said: Man sollte Patterns nie 1:1 blind übernehmen und Dinge anzupassen kann
+// gut sein. Jedoch habe ich eher das Gefühl, dass dieses Pattern hierfür nicht so das richtige
+// ist. Zumindest wirkt es kompliziert (I know, ich war derjenige, der es vorgeschlagen hat).
+// Ich merke zumindest dass es anstrengend ist euren Code nachzuvollziehen... Kann aber auch sein, weil
+// ich mit dem Secure Snail Protocol nicht 100% vertraut bin. Also nicht dass ihr jetzt alles umschreibt.
+// Wollte nur meinen ehrlichen Eindruck dalassen.
 pub struct SndFsm<State: Clone> {
-    _state: State,
-    _config: Config,
+    // mhieron: Warum underscore vor den Werten?
+    state: State,
+    config: Config,
 }
 
 impl<State: Clone> SndFsm<State> {
     pub fn new(state: State, max_retransmits: u8) -> Self {
         SndFsm {
-            _state: state,
-            _config: Config::new(max_retransmits),
+            state,
+            config: Config::new(max_retransmits),
         }
     }
 
     pub fn max_retransmits(&self) -> u8 {
-        self._config.max_retransmits
+        self.config.max_retransmits
     }
 
     /// immutable reference
     pub fn state(&self) -> &State {
-        &self._state
+        &self.state
     }
 
     pub fn to_send(&self, n: u8) -> SndFsm<SndStateSend> {
         SndFsm {
-            _state: SndStateSend::new(n),
-            _config: self._config,
+            state: SndStateSend::new(n),
+            config: self.config,
         }
     }
 
     pub fn to_wait(&self, n: u8, sndpkt: Packet) -> SndFsm<SndStateWait> {
         SndFsm {
-            _state: SndStateWait::new(n, sndpkt),
-            _config: self._config,
+            state: SndStateWait::new(n, sndpkt),
+            config: self.config,
         }
     }
 
     pub fn to_end(&self) -> SndFsm<SndStateEnd> {
         SndFsm {
-            _state: SndStateEnd,
-            _config: self._config,
+            state: SndStateEnd,
+            config: self.config,
         }
     }
 }
@@ -181,6 +192,9 @@ impl SndFsm<SndStateStart> {
     }
 }
 
+// mhieron: Ich finde, dass der State hier doppelt abgebildet ist.
+// Einmal in einem Enum und einmal als Generic. Eins von beidem sollte weg.
+// Es sollte nur eine "source of truth" geben. So ist es unnötig kompliziert.
 pub enum FsmStateWrapper {
     Start(SndFsm<SndStateStart>),
     Wait(SndFsm<SndStateWait>),
@@ -212,6 +226,9 @@ pub trait ProtocolIoContext {
     fn increase_data_counter(&mut self, n: usize);
 }
 
+// mhieron: Ich check nicht so ganz wofür diese Methode verwendet wird
+// Aber es sieht so aus als ob ihr einfach toggeln wollt? 0 -> 1 -> 0 -> 1?
+// Wenn ja, warum nicht einfach ein Bool und den invertieren?
 pub fn next_n(n: u8) -> u8 {
     match n {
         0 => 1,
